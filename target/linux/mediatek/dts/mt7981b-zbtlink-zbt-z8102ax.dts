@@ -26,31 +26,28 @@
 
 	gpio-keys {
 		compatible = "gpio-keys";
-
 		reset {
 			label = "reset";
 			linux,code = <KEY_RESTART>;
 			gpios = <&pio 1 GPIO_ACTIVE_LOW>;
 		};
-
 		mesh {
 			label = "mesh";
 			linux,code = <KEY_MESH_BUTTON>;
 			gpios = <&pio 0 GPIO_ACTIVE_HIGH>;
 		};
-
 		hub {
 			label = "hub";
 			linux,code = <BTN_1>;
 			gpios = <&pio 12 GPIO_ACTIVE_HIGH>;
 		};
-		
 	};
 
 	memory {
 		device_type = "memory";
 		reg = <0 0x40000000 0 0x40000000>;
-
+	};
+	
 	leds {
 		compatible = "gpio-leds";
 
