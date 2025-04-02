@@ -31,9 +31,9 @@
 			linux,code = <KEY_RESTART>;
 			gpios = <&pio 1 GPIO_ACTIVE_LOW>;
 		};
-		mesh {
-			label = "mesh";
-			linux,code = <KEY_MESH_BUTTON>;
+		wps {
+			label = "wps";
+			linux,code = <KEY_WPS_BUTTON>;
 			gpios = <&pio 0 GPIO_ACTIVE_HIGH>;
 		};
 		hub {
