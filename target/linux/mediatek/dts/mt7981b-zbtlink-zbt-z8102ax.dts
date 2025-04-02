@@ -276,7 +276,7 @@
 
 &pio {
 	gpio-line-names = 
-			"mesh",
+			"wps",
 			"reset",
 			"watchdog",
 			"pcie",
