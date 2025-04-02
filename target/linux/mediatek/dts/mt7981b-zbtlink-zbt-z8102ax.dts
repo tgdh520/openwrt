@@ -1,16 +1,18 @@
-// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT 
 
 /dts-v1/;
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
 
 #include "mt7981.dtsi"
 
 / {
-	model = "Zbtlink ZBT-Z8102AX";
-	compatible = "zbtlink,zbt-z8102ax", "mediatek,mt7981";
+	model = "ZBT Z8102AX";
+	compatible = "z8102ax", "mediatek,mt7981", "zbtlink,zbt-z8102ax";
 
 	aliases {
 		serial0 = &uart0;
-		led-boot = &led_status_green;
+		led-boot = &led_status_red;
 		led-failsafe = &led_status_red;
 		led-running = &led_status_green;
 		led-upgrade = &led_status_green;
@@ -22,62 +24,68 @@
 		bootargs = "earlycon=uart8250,mmio32,0x11002000 console=ttyS0,115200n8 loglevel=8";
 	};
 
-	memory {
-		reg = <0 0x40000000 0 0x40000000>;
-	};
-
 	gpio-keys {
 		compatible = "gpio-keys";
 
-		button-reset {
+		reset {
 			label = "reset";
 			linux,code = <KEY_RESTART>;
 			gpios = <&pio 1 GPIO_ACTIVE_LOW>;
 		};
 
-		button-mesh {
+		mesh {
 			label = "mesh";
-			linux,code = <BTN_0>;
+			linux,code = <KEY_MESH_BUTTON>;
 			gpios = <&pio 0 GPIO_ACTIVE_HIGH>;
 		};
 
-		button-hub {
+		hub {
 			label = "hub";
 			linux,code = <BTN_1>;
 			gpios = <&pio 12 GPIO_ACTIVE_HIGH>;
 		};
+		
 	};
+
+	memory {
+		device_type = "memory";
+		reg = <0 0x40000000 0 0x40000000>;
 
 	leds {
 		compatible = "gpio-leds";
 
 		led_status_red: red {
+			label = "red:status";
 			gpios = <&pio 9 GPIO_ACTIVE_HIGH>;
 			color = <LED_COLOR_ID_RED>;
 			function = LED_FUNCTION_STATUS;
 		};
 
 		led_status_green: green {
+			label = "green:status";
 			gpios = <&pio 10 GPIO_ACTIVE_LOW>;
 			color = <LED_COLOR_ID_GREEN>;
 			function = LED_FUNCTION_STATUS;
 		};
-
-		blue {
+		
+		led_status_blue: blue {
+			label = "blue:status";
 			gpios = <&pio 11 GPIO_ACTIVE_LOW>;
 			color = <LED_COLOR_ID_BLUE>;
 			function = LED_FUNCTION_STATUS;
 		};
-
-		4g {
+		
+		led_status_5g1: 5g1 {
+			label = "5g1:status";
 			gpios = <&pio 8 GPIO_ACTIVE_LOW>;
 			color = <LED_COLOR_ID_BLUE>;
 			function = LED_FUNCTION_USB;
 			function-enumerator = <0>;
 		};
-
-		4g2 {
-			gpios = <&pio 14 GPIO_ACTIVE_LOW>;
+		
+		led_status_5g2: 5g2 {
+			label = "5g2:status";
+			gpios = <&pio 13 GPIO_ACTIVE_LOW>;
 			color = <LED_COLOR_ID_BLUE>;
 			function = LED_FUNCTION_USB;
 			function-enumerator = <1>;
@@ -131,13 +139,11 @@
 	status = "okay";
 
 	gmac0: mac@0 {
-		/* LAN */
 		compatible = "mediatek,eth-mac";
 		reg = <0>;
 		phy-mode = "2500base-x";
-
 		nvmem-cell-names = "mac-address";
-		nvmem-cells = <&macaddr_factory_4 2>;
+		nvmem-cells = <&macaddr_factory_004>;
 
 		fixed-link {
 			speed = <2500>;
@@ -145,21 +151,19 @@
 			pause;
 		};
 	};
-
+	
 	gmac1: mac@1 {
-		/* WAN */
 		compatible = "mediatek,eth-mac";
 		reg = <1>;
 		phy-mode = "gmii";
 		phy-handle = <&int_gbe_phy>;
-
 		nvmem-cell-names = "mac-address";
-		nvmem-cells = <&macaddr_factory_4 3>;
+		nvmem-cells = <&macaddr_factory_02a>;
 	};
 };
 
 &mdio_bus {
-	switch: switch@1f {
+	switch: switch@0 {
 		compatible = "mediatek,mt7531";
 		reg = <31>;
 		reset-gpios = <&pio 39 GPIO_ACTIVE_HIGH>;
@@ -182,8 +186,8 @@
 		reg = <0>;
 
 		spi-max-frequency = <52000000>;
-		spi-tx-bus-width = <4>;
-		spi-rx-bus-width = <4>;
+		spi-tx-buswidth = <4>;
+		spi-rx-buswidth = <4>;
 
 		mediatek,nmbm;
 		mediatek,bmt-max-ratio = <1>;
@@ -202,40 +206,24 @@
 
 			partition@100000 {
 				label = "u-boot-env";
-				reg = <0x100000 0x80000>;
+				reg = <0x0100000 0x0080000>;
 			};
 
-			partition@180000 {
+			factory: partition@180000 {
 				label = "Factory";
-				reg = <0x180000 0x200000>;
+				reg = <0x0180000 0x0200000>;
 				read-only;
-
-				nvmem-layout {
-					compatible = "fixed-layout";
-					#address-cells = <1>;
-					#size-cells = <1>;
-
-					eeprom_factory: eeprom@0 {
-						reg = <0x0 0x1000>;
-					};
-
-					macaddr_factory_4: macaddr@4 {
-						compatible = "mac-base";
-						reg = <0x4 0x6>;
-						#nvmem-cell-cells = <1>;
-					};
-				};
 			};
 
 			partition@380000 {
 				label = "FIP";
-				reg = <0x380000 0x200000>;
+				reg = <0x0380000 0x0200000>;
 				read-only;
 			};
 
-			partition@580000 {
+			nand_rootfs: partition@580000 {
 				label = "ubi";
-				reg = <0x580000 0x4000000>;
+				reg = <0x0580000 0x7E80000>;
 			};
 		};
 	};
@@ -249,21 +237,29 @@
 		port@0 {
 			reg = <0>;
 			label = "lan1";
+			nvmem-cell-names = "mac-address";
+			nvmem-cells = <&macaddr_factory_004>;
 		};
 
 		port@1 {
 			reg = <1>;
 			label = "lan2";
+			nvmem-cell-names = "mac-address";
+			nvmem-cells = <&macaddr_factory_004>;
 		};
 
 		port@2 {
 			reg = <2>;
 			label = "lan3";
+			nvmem-cell-names = "mac-address";
+			nvmem-cells = <&macaddr_factory_004>;
 		};
 
 		port@3 {
 			reg = <3>;
 			label = "lan4";
+			nvmem-cell-names = "mac-address";
+			nvmem-cells = <&macaddr_factory_004>;
 		};
 
 		port@6 {
@@ -282,6 +278,22 @@
 };
 
 &pio {
+	gpio-line-names = 
+			"mesh",
+			"reset",
+			"watchdog",
+			"pcie",
+			"5g1",
+			"5g2",
+			"sim1",
+			"sim2",
+			"5g1_status",
+			"red_status",
+			"green_status",
+			"blue_status",
+			"",
+			"5g2_status";
+
 	spi0_flash_pins: spi0-pins {
 		mux {
 			function = "spi";
@@ -291,13 +303,13 @@
 		conf-pu {
 			pins = "SPI0_CS", "SPI0_HOLD", "SPI0_WP";
 			drive-strength = <8>;
-			bias-pull-up = <103>;
+			mediatek,pull-up-adv = <0>; /* bias-disable */
 		};
 
 		conf-pd {
 			pins = "SPI0_CLK", "SPI0_MOSI", "SPI0_MISO";
 			drive-strength = <8>;
-			bias-pull-down = <103>;
+			mediatek,pull-up-adv = <0>; /* bias-disable */
 		};
 	};
 };
@@ -320,7 +332,18 @@
 
 &wifi {
 	status = "okay";
+	mediatek,mtd-eeprom = <&factory 0x0>;
+};
 
-	nvmem-cells = <&eeprom_factory>;
-	nvmem-cell-names = "eeprom";
+&factory {
+	compatible = "nvmem-cells";
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	macaddr_factory_004: macaddr@004 {
+		reg = <0x004 0x6>;
+	};
+	macaddr_factory_02a: macaddr@02a {
+		reg = <0x02a 0x6>;
+	};
 };
